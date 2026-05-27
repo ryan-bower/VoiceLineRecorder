@@ -95,13 +95,11 @@ kbd {
 .row { display: flex; gap: 12px; align-items: center; margin: 14px 0; }
 
 /* folder picker */
-.folder-picker { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
-.folder-current { font-family: monospace; font-size: 12px; color: var(--muted); word-break: break-all; margin-bottom: 8px; }
-.folder-actions { display: flex; gap: 8px; margin-bottom: 8px; }
-.folder-list { list-style: none; margin: 0; padding: 0; max-height: 200px; overflow-y: auto; }
-.folder-list li { padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-.folder-list li:hover { background: var(--panel); }
-.folder-chosen { margin-top: 8px; color: var(--green); font-size: 13px; }
+.folder-picker { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.folder-chosen { margin-top: 10px; color: var(--green); font-size: 13px; word-break: break-all; }
+.folder-manual { margin-top: 10px; }
+.folder-manual summary { color: var(--muted); font-size: 13px; cursor: pointer; }
+.folder-manual input { margin-top: 8px; }
 
 .preview { margin-top: 10px; font-size: 14px; color: var(--muted); }
 .preview ol { margin: 6px 0; padding-left: 22px; }

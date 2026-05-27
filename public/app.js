@@ -42,32 +42,27 @@ function show(screen) {
   state.current = screen;
 }
 
-// ---------- setup: folder browser ----------
-async function loadFolder(p) {
-  try {
-    const data = await api(`/api/browse?path=${encodeURIComponent(p || "")}`);
-    state.browsePath = data.path;
-    $("folderCurrent").textContent = data.path;
-    const list = $("folderList");
-    list.innerHTML = "";
-    data.dirs.forEach((d) => {
-      const li = document.createElement("li");
-      li.textContent = "📁 " + d.name;
-      li.onclick = () => loadFolder(d.path);
-      list.appendChild(li);
-    });
-    $("folderUp").dataset.parent = data.parent;
-  } catch (e) {
-    $("setupError").textContent = e.message;
-  }
+// ---------- setup: folder picker ----------
+function setChosenFolder(p) {
+  state.chosenFolder = p;
+  $("folderChosen").textContent = p ? "✓ Saving to: " + p : "";
+  validateSetup();
 }
 
-$("folderUp").onclick = () => loadFolder($("folderUp").dataset.parent);
-$("folderUse").onclick = () => {
-  state.chosenFolder = state.browsePath;
-  $("folderChosen").textContent = "✓ Saving to: " + state.chosenFolder;
-  validateSetup();
+$("folderPick").onclick = async () => {
+  $("setupError").textContent = "";
+  try {
+    const data = await api("/api/pick-folder");
+    if (data.path) {
+      setChosenFolder(data.path);
+      $("folderManual").value = data.path;
+    }
+  } catch (e) {
+    $("setupError").textContent = e.message + " — type a path manually instead.";
+  }
 };
+
+$("folderManual").oninput = (e) => setChosenFolder(e.target.value.trim());
 
 $("txtFile").onchange = async (e) => {
   const file = e.target.files[0];
@@ -427,8 +422,8 @@ $("newSession").onclick = async () => {
   $("folderChosen").textContent = "";
   $("projectLabel").textContent = "";
   $("toMicCheck").disabled = true;
+  $("folderManual").value = "";
   show("setup");
-  loadFolder();
 };
 
 // ---------- boot: resume if a session is already active ----------
@@ -442,7 +437,6 @@ $("newSession").onclick = async () => {
       return;
     }
   } catch { /* ignore */ }
-  loadFolder();
 })();
 
 function escapeHtml(s) {

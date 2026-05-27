@@ -1,10 +1,9 @@
 import express from "express";
 import multer from "multer";
 import archiver from "archiver";
-import fs from "node:fs";
 import fsp from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
+import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import { parseLines } from "./src/parse-lines.js";
@@ -258,20 +257,31 @@ app.get("/api/export", (req, res) => {
   archive.finalize();
 });
 
-// Folder browser for picking an output directory.
-app.get("/api/browse", async (req, res) => {
-  try {
-    const target = req.query.path ? String(req.query.path) : os.homedir();
-    const resolved = path.resolve(target);
-    const entries = await fsp.readdir(resolved, { withFileTypes: true });
-    const dirs = entries
-      .filter((e) => e.isDirectory() && !e.name.startsWith("."))
-      .map((e) => ({ name: e.name, path: path.join(resolved, e.name) }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-    res.json({ path: resolved, parent: path.dirname(resolved), dirs });
-  } catch (err) {
-    res.status(400).json({ error: String(err.message || err) });
+// Native OS folder picker (Windows). Opens the real Explorer dialog — which
+// has a "Make New Folder" button — and returns the chosen absolute path.
+app.get("/api/pick-folder", (req, res) => {
+  if (process.platform !== "win32") {
+    return res.status(501).json({ error: "Native picker is Windows-only — type a path manually." });
   }
+  const script =
+    "Add-Type -AssemblyName System.Windows.Forms | Out-Null;" +
+    "$top=New-Object System.Windows.Forms.Form; $top.TopMost=$true;" +
+    "$f=New-Object System.Windows.Forms.FolderBrowserDialog;" +
+    "$f.Description='Choose where to save your recordings';" +
+    "$f.ShowNewFolderButton=$true;" +
+    "if($f.ShowDialog($top) -eq 'OK'){[Console]::Out.Write($f.SelectedPath)};" +
+    "$top.Dispose()";
+  execFile(
+    "powershell.exe",
+    ["-NoProfile", "-STA", "-Command", script],
+    { windowsHide: true },
+    (err, stdout) => {
+      if (err) return res.status(500).json({ error: String(err.message || err) });
+      const picked = (stdout || "").trim();
+      if (!picked) return res.json({ canceled: true });
+      res.json({ path: picked });
+    }
+  );
 });
 
 app.listen(PORT, () => {

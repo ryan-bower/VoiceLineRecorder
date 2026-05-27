@@ -28,13 +28,12 @@
       <div class="field">
         <span>Output folder</span>
         <div class="folder-picker">
-          <div class="folder-current" id="folderCurrent">—</div>
-          <div class="folder-actions">
-            <button id="folderUp" type="button" class="btn small">⬆ Up</button>
-            <button id="folderUse" type="button" class="btn small primary">Use this folder</button>
-          </div>
-          <ul id="folderList" class="folder-list"></ul>
+          <button id="folderPick" type="button" class="btn">📂 Choose output folder…</button>
           <div class="folder-chosen" id="folderChosen"></div>
+          <details class="folder-manual">
+            <summary>or type a path manually</summary>
+            <input id="folderManual" type="text" placeholder="C:\Users\you\Recordings" />
+          </details>
         </div>
       </div>
 
