@@ -1,0 +1,17 @@
+{
+  "name": "voice-line-recorder",
+  "version": "1.0.0",
+  "description": "Simple local web app for voice actors to record line lists into organized lossless WAVs.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}
