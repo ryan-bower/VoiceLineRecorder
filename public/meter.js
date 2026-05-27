@@ -3,6 +3,7 @@
 const CLIP_DBFS = -1;     // at or above this = clipping risk
 const QUIET_DBFS = -24;   // recent peak below this = too quiet (flags whispers)
 const FLOOR_DBFS = -60;   // bottom of the meter
+const GATE_DBFS = -50;    // below this the bar is pinned to 0 (no idle bobbing)
 
 export class Meter {
   constructor({ canvas, bar, status }) {
@@ -86,8 +87,11 @@ export class Meter {
 
   _drawLevel(dbfs) {
     if (!this.bar) return;
-    // Bar tracks the instantaneous level for lively movement.
-    const pct = Math.max(0, Math.min(100, ((dbfs - FLOOR_DBFS) / (0 - FLOOR_DBFS)) * 100));
+    // Bar tracks the instantaneous level for lively movement, but is gated to
+    // zero below GATE_DBFS so background noise doesn't make it bob when idle.
+    const pct = dbfs < GATE_DBFS
+      ? 0
+      : Math.max(0, Math.min(100, ((dbfs - FLOOR_DBFS) / (0 - FLOOR_DBFS)) * 100));
     this.bar.style.width = pct + "%";
 
     // Warnings are judged on the recent peak so they don't flicker on the

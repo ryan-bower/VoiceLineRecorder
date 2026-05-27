@@ -190,7 +190,8 @@ app.post("/api/room-tone", upload.single("audio"), async (req, res) => {
   try {
     if (!session) return res.status(409).json({ error: "No active session." });
     if (!req.file) return res.status(400).json({ error: "No audio uploaded." });
-    const index = session.roomTone.length + 1;
+    // Use max existing index + 1 so filenames never collide after a delete.
+    const index = session.roomTone.reduce((m, t) => Math.max(m, t.index), 0) + 1;
     const filename = roomToneFileName(index);
     const folder = path.join(session.dir, "room-tone");
     await fsp.mkdir(folder, { recursive: true });
@@ -209,6 +210,28 @@ app.post("/api/room-tone", upload.single("audio"), async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: String(err.message || err) });
   }
+});
+
+app.delete("/api/room-tone", async (req, res) => {
+  try {
+    if (!session) return res.status(409).json({ error: "No active session." });
+    const index = Number(req.body.index);
+    const t = session.roomTone.find((x) => x.index === index);
+    if (t) {
+      await fsp.rm(path.join(session.dir, "room-tone", t.filename), { force: true });
+      session.roomTone = session.roomTone.filter((x) => x.index !== index);
+      await persistSession();
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: String(err.message || err) });
+  }
+});
+
+// Clear the active session so the next setup starts fresh (does not delete files).
+app.post("/api/session/reset", (req, res) => {
+  session = null;
+  res.json({ active: false });
 });
 
 // Stream a recorded file for in-browser playback. Guarded against traversal.

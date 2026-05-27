@@ -362,6 +362,16 @@ $("rtRecordBtn").onclick = async () => {
   }
 };
 
+async function deleteRoomTone(index) {
+  await api("/api/room-tone", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ index }),
+  });
+  state.roomTone = state.roomTone.filter((t) => t.index !== index);
+  renderRoomTone();
+}
+
 function renderRoomTone() {
   const list = $("rtList");
   list.innerHTML = "";
@@ -370,7 +380,9 @@ function renderRoomTone() {
     li.innerHTML =
       `<span class="take-name">${t.filename}</span>` +
       `<span class="muted">${t.durationSec.toFixed(1)}s</span>` +
-      `<audio controls src="/api/file?rel=${encodeURIComponent(t.relPath)}"></audio>`;
+      `<audio controls src="/api/file?rel=${encodeURIComponent(t.relPath)}"></audio>` +
+      `<button class="btn tiny danger">Delete</button>`;
+    li.querySelector("button").onclick = () => deleteRoomTone(t.index);
     list.appendChild(li);
   });
 }
@@ -393,6 +405,31 @@ function enterFinish() {
 }
 
 $("exportBtn").onclick = () => { window.location = "/api/export"; };
+
+// ---------- new session ----------
+$("newSession").onclick = async () => {
+  if (!confirm("Start a new session? Your current recordings stay saved on disk; this just clears the app so you can begin a fresh project folder.")) return;
+  discardRecording();
+  state.meter?.stop();
+  state.recorder?.dispose();
+  state.recorder = null;
+  state.session = null;
+  state.takes = {};
+  state.roomTone = [];
+  state.lineIndex = 0;
+  state.chosenFolder = null;
+  state.linesText = null;
+  await api("/api/session/reset", { method: "POST" }).catch(() => {});
+  $("projectName").value = "";
+  $("txtFile").value = "";
+  $("attempts").value = "3";
+  $("linesPreview").innerHTML = "";
+  $("folderChosen").textContent = "";
+  $("projectLabel").textContent = "";
+  $("toMicCheck").disabled = true;
+  show("setup");
+  loadFolder();
+};
 
 // ---------- boot: resume if a session is already active ----------
 (async function boot() {
