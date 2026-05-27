@@ -254,12 +254,12 @@ async function toggleRecord() {
     state.recorder.start();
     state.isRecording = true;
     btn.classList.add("active");
-    btn.innerHTML = "■ Stop <kbd>Space</kbd>";
+    btn.querySelector(".rec-label").textContent = "Stop";
   } else {
     const { blob, durationSec, peakDbfs } = state.recorder.stop();
     state.isRecording = false;
     btn.classList.remove("active");
-    btn.innerHTML = "● Record <kbd>Space</kbd>";
+    btn.querySelector(".rec-label").textContent = "Record";
     await uploadTake(blob, durationSec, peakDbfs);
   }
 }
@@ -342,7 +342,7 @@ $("rtRecordBtn").onclick = async () => {
     state.recorder.start();
     state.isRecording = true;
     btn.classList.add("active");
-    btn.textContent = "■ Stop";
+    btn.querySelector(".rec-label").textContent = "Stop";
     let secs = 0;
     $("rtTimer").textContent = "0s";
     state.rtTimerId = setInterval(() => { $("rtTimer").textContent = ++secs + "s"; }, 1000);
@@ -351,7 +351,7 @@ $("rtRecordBtn").onclick = async () => {
     const { blob, durationSec, peakDbfs } = state.recorder.stop();
     state.isRecording = false;
     btn.classList.remove("active");
-    btn.textContent = "● Record room tone";
+    btn.querySelector(".rec-label").textContent = "Record room tone";
     const fd = new FormData();
     fd.append("audio", blob, "roomtone.wav");
     fd.append("durationSec", durationSec.toFixed(3));
