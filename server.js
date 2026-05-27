@@ -211,6 +211,19 @@ app.post("/api/room-tone", upload.single("audio"), async (req, res) => {
   }
 });
 
+// Stream a recorded file for in-browser playback. Guarded against traversal.
+app.get("/api/file", (req, res) => {
+  if (!session) return res.status(409).json({ error: "No active session." });
+  const rel = String(req.query.rel || "");
+  const resolved = path.resolve(session.dir, rel);
+  if (resolved !== session.dir && !resolved.startsWith(session.dir + path.sep)) {
+    return res.status(400).json({ error: "Invalid path." });
+  }
+  res.sendFile(resolved, (err) => {
+    if (err && !res.headersSent) res.status(404).end();
+  });
+});
+
 app.get("/api/export", (req, res) => {
   if (!session) return res.status(409).json({ error: "No active session." });
   const zipName = `${path.basename(session.dir)}.zip`;

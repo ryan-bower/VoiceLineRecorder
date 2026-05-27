@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VoiceLineRecorder</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🎙️ VoiceLineRecorder</div>
+    <div id="projectLabel" class="project-label"></div>
+  </header>
+
+  <main>
+    <!-- SETUP -->
+    <section id="screen-setup" class="screen active">
+      <h1>Set up your session</h1>
+
+      <label class="field">
+        <span>Project name</span>
+        <input id="projectName" type="text" placeholder="e.g. DragonQuest VO" />
+      </label>
+
+      <div class="field">
+        <span>Output folder</span>
+        <div class="folder-picker">
+          <div class="folder-current" id="folderCurrent">—</div>
+          <div class="folder-actions">
+            <button id="folderUp" type="button" class="btn small">⬆ Up</button>
+            <button id="folderUse" type="button" class="btn small primary">Use this folder</button>
+          </div>
+          <ul id="folderList" class="folder-list"></ul>
+          <div class="folder-chosen" id="folderChosen"></div>
+        </div>
+      </div>
+
+      <label class="field">
+        <span>Line list (.txt)</span>
+        <input id="txtFile" type="file" accept=".txt,text/plain" />
+        <div id="linesPreview" class="preview"></div>
+      </label>
+
+      <label class="field narrow">
+        <span>Takes per line</span>
+        <input id="attempts" type="number" min="1" max="20" value="3" />
+      </label>
+
+      <p id="setupError" class="error"></p>
+      <button id="toMicCheck" class="btn primary big" disabled>Continue to mic check →</button>
+    </section>
+
+    <!-- MIC CHECK -->
+    <section id="screen-miccheck" class="screen">
+      <h1>Mic check</h1>
+      <label class="field">
+        <span>Input device</span>
+        <select id="deviceSelect"></select>
+      </label>
+
+      <div class="meter-block">
+        <canvas id="micCanvas" width="640" height="120"></canvas>
+        <div class="level"><div id="micBar" class="level-bar"></div></div>
+        <div id="micStatus" class="meter-status">Speak to test your level…</div>
+      </div>
+
+      <div class="row">
+        <button id="testRecord" class="btn">● Test record</button>
+        <audio id="testPlayback" controls></audio>
+      </div>
+
+      <p id="micError" class="error"></p>
+      <button id="toRecord" class="btn primary big">Start recording session →</button>
+    </section>
+
+    <!-- RECORD -->
+    <section id="screen-record" class="screen record-layout">
+      <aside class="queue">
+        <div class="queue-head">
+          <span>Lines</span>
+          <span id="queueProgress" class="muted"></span>
+        </div>
+        <ul id="queueList"></ul>
+        <div class="queue-foot">
+          <button id="toRoomTone" class="btn small">Room tone →</button>
+        </div>
+      </aside>
+
+      <div class="stage">
+        <div class="line-meta">
+          <span id="lineNum" class="line-num"></span>
+          <span id="lineId" class="line-id"></span>
+        </div>
+        <div id="lineText" class="line-text"></div>
+        <div id="lineNotes" class="line-notes"></div>
+
+        <div class="meter-block">
+          <canvas id="recCanvas" width="640" height="120"></canvas>
+          <div class="level"><div id="recBar" class="level-bar"></div></div>
+          <div id="recStatus" class="meter-status">Ready.</div>
+        </div>
+
+        <div class="controls">
+          <button id="recordBtn" class="btn record big">● Record <kbd>Space</kbd></button>
+          <span id="takeCounter" class="take-counter"></span>
+          <label class="auto-advance"><input id="autoAdvance" type="checkbox" /> Auto-advance</label>
+        </div>
+
+        <div class="takes">
+          <h3>Takes</h3>
+          <ul id="takesList"></ul>
+        </div>
+
+        <div class="nav">
+          <button id="prevLine" class="btn small">↑ Previous</button>
+          <button id="nextLine" class="btn small">Next ↓</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROOM TONE -->
+    <section id="screen-roomtone" class="screen">
+      <h1>Room tone</h1>
+      <p class="muted">Record a few seconds of silence (stay quiet, don't move) so the ambient room noise is captured. 10–30 seconds is ideal.</p>
+
+      <div class="meter-block">
+        <canvas id="rtCanvas" width="640" height="120"></canvas>
+        <div class="level"><div id="rtBar" class="level-bar"></div></div>
+        <div id="rtStatus" class="meter-status">Ready.</div>
+      </div>
+
+      <div class="controls">
+        <button id="rtRecordBtn" class="btn record big">● Record room tone</button>
+        <span id="rtTimer" class="take-counter"></span>
+      </div>
+
+      <div class="takes">
+        <h3>Room tone samples</h3>
+        <ul id="rtList"></ul>
+      </div>
+
+      <div class="nav">
+        <button id="backToRecord" class="btn small">← Back to lines</button>
+        <button id="toFinish" class="btn primary">Finish & export →</button>
+      </div>
+    </section>
+
+    <!-- FINISH -->
+    <section id="screen-finish" class="screen">
+      <h1>All done 🎉</h1>
+      <div id="summary" class="summary"></div>
+      <button id="exportBtn" class="btn primary big">⬇ Export ZIP</button>
+      <div class="delivery">
+        <h3>Send it back</h3>
+        <p class="muted">Once exported, upload the ZIP using the delivery method agreed with the project owner (e.g. a Dropbox File Request link, shared Google Drive folder, or WeTransfer).</p>
+      </div>
+      <button id="backToRecord2" class="btn small">← Back to lines</button>
+    </section>
+  </main>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
