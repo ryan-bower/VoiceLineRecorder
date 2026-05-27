@@ -1,7 +1,7 @@
 // Live waveform + peak level meter with clip / too-quiet warnings.
 
 const CLIP_DBFS = -1;     // at or above this = clipping risk
-const QUIET_DBFS = -40;   // below this = too quiet
+const QUIET_DBFS = -24;   // recent peak below this = too quiet (flags whispers)
 const FLOOR_DBFS = -60;   // bottom of the meter
 
 export class Meter {
@@ -86,15 +86,19 @@ export class Meter {
 
   _drawLevel(dbfs) {
     if (!this.bar) return;
+    // Bar tracks the instantaneous level for lively movement.
     const pct = Math.max(0, Math.min(100, ((dbfs - FLOOR_DBFS) / (0 - FLOOR_DBFS)) * 100));
     this.bar.style.width = pct + "%";
 
+    // Warnings are judged on the recent peak so they don't flicker on the
+    // natural dips between words.
+    const level = this.peakHold;
     let color = "#54d18c"; // good
-    let msg = `${dbfs > -100 ? dbfs.toFixed(1) : "-∞"} dBFS`;
-    if (dbfs >= CLIP_DBFS) {
+    let msg = `${level > -100 ? level.toFixed(1) : "-∞"} dBFS peak`;
+    if (level >= CLIP_DBFS) {
       color = "#e2554e";
       msg = "Clipping! Back off the mic or lower input gain.";
-    } else if (dbfs < QUIET_DBFS) {
+    } else if (level < QUIET_DBFS) {
       color = "#d8a13a";
       msg = "Too quiet — move closer or raise input gain.";
     }

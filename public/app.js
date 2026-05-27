@@ -22,7 +22,18 @@ const state = {
   meter: null,
   isRecording: false,
   rtTimerId: null,
+  lastToggle: 0,
 };
+
+// Abandon any in-progress recording (used when switching screens) so a stray
+// "recording" state can never leak from one screen into another.
+function discardRecording() {
+  if (state.isRecording) {
+    try { state.recorder.stop(); } catch { /* ignore */ }
+    state.isRecording = false;
+    clearInterval(state.rtTimerId);
+  }
+}
 
 // ---------- screen routing ----------
 function show(screen) {
@@ -168,6 +179,7 @@ function startMeter(canvasId, barId, statusId) {
 
 // ---------- record ----------
 function enterRecord() {
+  discardRecording();
   show("record");
   $("autoAdvance").checked = true;
   renderQueue();
@@ -229,7 +241,14 @@ function renderTakes() {
 }
 
 async function toggleRecord() {
+  // Guard against a single Space press firing both the global key handler and
+  // the focused button's native activation.
+  const now = performance.now();
+  if (now - state.lastToggle < 250) return;
+  state.lastToggle = now;
+
   const btn = $("recordBtn");
+  btn.blur();
   if (!state.isRecording) {
     await state.recorder.resume();
     state.recorder.start();
@@ -289,6 +308,7 @@ $("toRoomTone").onclick = () => enterRoomTone();
 // keyboard shortcuts (record screen only)
 document.addEventListener("keydown", (e) => {
   if (state.current !== "record") return;
+  if (e.repeat) return;
   if (["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
   if (e.code === "Space") { e.preventDefault(); toggleRecord(); }
   else if (e.code === "ArrowDown") { e.preventDefault(); loadLine(state.lineIndex + 1); }
@@ -304,13 +324,19 @@ document.addEventListener("keydown", (e) => {
 
 // ---------- room tone ----------
 function enterRoomTone() {
+  discardRecording();
   show("roomtone");
   renderRoomTone();
   startMeter("rtCanvas", "rtBar", "rtStatus");
 }
 
 $("rtRecordBtn").onclick = async () => {
+  const now = performance.now();
+  if (now - state.lastToggle < 250) return;
+  state.lastToggle = now;
+
   const btn = $("rtRecordBtn");
+  btn.blur();
   if (!state.isRecording) {
     await state.recorder.resume();
     state.recorder.start();
@@ -355,6 +381,7 @@ $("toFinish").onclick = () => enterFinish();
 
 // ---------- finish ----------
 function enterFinish() {
+  discardRecording();
   show("finish");
   state.meter?.stop();
   const started = lines().filter((l) => (state.takes[l.number] || []).length).length;
