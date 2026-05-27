@@ -257,23 +257,16 @@ app.get("/api/export", (req, res) => {
   archive.finalize();
 });
 
-// Native OS folder picker (Windows). Opens the real Explorer dialog — which
-// has a "Make New Folder" button — and returns the chosen absolute path.
+// Native OS folder picker (Windows). Opens the modern Explorer-style folder
+// dialog (IFileOpenDialog, same as Save As) and returns the chosen path.
 app.get("/api/pick-folder", (req, res) => {
   if (process.platform !== "win32") {
     return res.status(501).json({ error: "Native picker is Windows-only — type a path manually." });
   }
-  const script =
-    "Add-Type -AssemblyName System.Windows.Forms | Out-Null;" +
-    "$top=New-Object System.Windows.Forms.Form; $top.TopMost=$true;" +
-    "$f=New-Object System.Windows.Forms.FolderBrowserDialog;" +
-    "$f.Description='Choose where to save your recordings';" +
-    "$f.ShowNewFolderButton=$true;" +
-    "if($f.ShowDialog($top) -eq 'OK'){[Console]::Out.Write($f.SelectedPath)};" +
-    "$top.Dispose()";
+  const ps1 = path.join(__dirname, "scripts", "pick-folder.ps1");
   execFile(
     "powershell.exe",
-    ["-NoProfile", "-STA", "-Command", script],
+    ["-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-File", ps1],
     { windowsHide: true },
     (err, stdout) => {
       if (err) return res.status(500).json({ error: String(err.message || err) });
