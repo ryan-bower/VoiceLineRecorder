@@ -85,6 +85,20 @@ input[type=file] { color: var(--muted); }
   animation: rec-blink 1s steps(1, end) infinite;
 }
 @keyframes rec-blink { 50% { opacity: 0; } }
+
+/* room-tone button glows green once all lines are complete */
+.btn.glow-green {
+  background: var(--green);
+  border-color: var(--green);
+  color: #06210f;
+  font-weight: 600;
+  animation: glow-pulse 1.6s ease-in-out infinite;
+}
+.btn.glow-green:hover { border-color: var(--green); }
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(84, 209, 140, 0.55); }
+  50% { box-shadow: 0 0 15px 3px rgba(84, 209, 140, 0.95); }
+}
 kbd {
   background: rgba(255,255,255,0.12); border-radius: 4px; padding: 1px 5px;
   font-size: 11px; margin-left: 4px;

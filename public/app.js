@@ -203,6 +203,10 @@ function renderQueue() {
     list.appendChild(li);
   });
   $("queueProgress").textContent = `${done}/${lines().length} started`;
+
+  // Light up the room-tone button once every line has hit its take count.
+  const allComplete = lines().every((l) => (state.takes[l.number] || []).length >= attempts());
+  $("toRoomTone").classList.toggle("glow-green", allComplete);
 }
 
 function loadLine(i) {
