@@ -116,11 +116,13 @@ function applySession(data) {
 // ---------- mic check ----------
 async function enterMicCheck() {
   show("miccheck");
+  $("toRecord").classList.remove("glow-green");
   try {
     if (!state.recorder) state.recorder = new Recorder();
     await state.recorder.init();
     await populateDevices();
     startMeter("micCanvas", "micBar", "micStatus");
+    $("toRecord").classList.add("glow-green"); // mic enabled & working
   } catch (e) {
     $("micError").textContent = "Could not access microphone: " + e.message;
   }
@@ -142,8 +144,10 @@ $("deviceSelect").onchange = async () => {
   state.meter?.stop();
   state.recorder.dispose();
   state.recorder = new Recorder();
+  $("toRecord").classList.remove("glow-green");
   await state.recorder.init($("deviceSelect").value);
   startMeter("micCanvas", "micBar", "micStatus");
+  $("toRecord").classList.add("glow-green");
 };
 
 $("testRecord").onclick = async () => {
@@ -180,6 +184,9 @@ function enterRecord() {
   renderQueue();
   loadLine(state.lineIndex);
   startMeter("recCanvas", "recBar", "recStatus");
+  // Pulse the record button to show where to begin, until the first take.
+  const anyTakes = Object.values(state.takes).some((arr) => arr.length);
+  $("recordBtn").classList.toggle("hint-glow", !anyTakes);
 }
 
 const lines = () => state.session.lines;
@@ -248,6 +255,7 @@ async function toggleRecord() {
 
   const btn = $("recordBtn");
   btn.blur();
+  btn.classList.remove("hint-glow");
   if (!state.isRecording) {
     await state.recorder.resume();
     state.recorder.start();
@@ -384,6 +392,8 @@ function renderRoomTone() {
     li.querySelector("button").onclick = () => deleteRoomTone(t.index);
     list.appendChild(li);
   });
+  // Light up Finish once at least one room tone has been captured.
+  $("toFinish").classList.toggle("glow-green", state.roomTone.length > 0);
 }
 
 $("backToRecord").onclick = () => enterRecord();

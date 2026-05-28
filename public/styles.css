@@ -99,6 +99,13 @@ input[type=file] { color: var(--muted); }
   0%, 100% { box-shadow: 0 0 4px rgba(84, 209, 140, 0.55); }
   50% { box-shadow: 0 0 15px 3px rgba(84, 209, 140, 0.95); }
 }
+
+/* attention pulse for the record button on first load (no recolor) */
+.btn.hint-glow { animation: hint-pulse 1.4s ease-in-out infinite; }
+@keyframes hint-pulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(79, 140, 255, 0.5); }
+  50% { box-shadow: 0 0 16px 3px rgba(79, 140, 255, 0.9); }
+}
 kbd {
   background: rgba(255,255,255,0.12); border-radius: 4px; padding: 1px 5px;
   font-size: 11px; margin-left: 4px;
