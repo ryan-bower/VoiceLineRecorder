@@ -26,17 +26,32 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 200
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/src", express.static(path.join(__dirname, "src")));
 
-// ---- Active session (in-memory; survives browser reloads while server runs) ----
+// ---- Active session (persisted to disk; reloaded on server restart) ----
 let session = null;
 
 const sessionFile = (dir) => path.join(dir, "session.json");
 const manifestFile = (dir) => path.join(dir, "manifest.csv");
+// Pointer to the last active session's folder, so a restart can resume it.
+const pointerFile = path.join(__dirname, ".last-session");
 
 async function persistSession() {
   if (!session) return;
   session.updatedAt = new Date().toISOString();
   await fsp.writeFile(sessionFile(session.dir), JSON.stringify(session, null, 2));
+  await fsp.writeFile(pointerFile, session.dir);
   await writeManifest();
+}
+
+// On startup, reload the last session from disk so reloads/restarts resume it.
+async function loadLastSession() {
+  try {
+    const dir = (await fsp.readFile(pointerFile, "utf8")).trim();
+    const saved = JSON.parse(await fsp.readFile(sessionFile(dir), "utf8"));
+    session = saved;
+    console.log(`  Resumed last session: ${saved.projectName} (${dir})`);
+  } catch {
+    /* no previous session, or it was moved/deleted */
+  }
 }
 
 function csvField(v) {
@@ -242,8 +257,9 @@ app.delete("/api/room-tone", async (req, res) => {
 });
 
 // Clear the active session so the next setup starts fresh (does not delete files).
-app.post("/api/session/reset", (req, res) => {
+app.post("/api/session/reset", async (req, res) => {
   session = null;
+  await fsp.rm(pointerFile, { force: true });
   res.json({ active: false });
 });
 
@@ -291,6 +307,7 @@ app.get("/api/pick-folder", (req, res) => {
   );
 });
 
+await loadLastSession();
 app.listen(PORT, () => {
-  console.log(`\n  VoiceLineRecorder running:  http://localhost:${PORT}\n`);
+  console.log(`\n  Voice Actor Studio running:  http://localhost:${PORT}\n`);
 });
