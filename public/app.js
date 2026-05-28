@@ -83,6 +83,7 @@ $("projectName").oninput = validateSetup;
 function validateSetup() {
   const ok = $("projectName").value.trim() && state.chosenFolder && state.linesText;
   $("toMicCheck").disabled = !ok;
+  $("toMicCheck").classList.toggle("glow-green", !!ok);
 }
 
 $("toMicCheck").onclick = async () => {
@@ -436,6 +437,7 @@ $("newSession").onclick = async () => {
   $("folderChosen").textContent = "";
   $("projectLabel").textContent = "";
   $("toMicCheck").disabled = true;
+  $("toMicCheck").classList.remove("glow-green");
   $("folderManual").value = "";
   show("setup");
 };
