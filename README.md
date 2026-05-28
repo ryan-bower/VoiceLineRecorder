@@ -1,25 +1,43 @@
-# VoiceLineRecorder
+# Voice Actor Studio
 
 A simple local web app for voice actors to record a list of lines into organized, lossless WAV files. Load a `.txt` of lines, record each one with easy retries and multiple takes, watch a live level meter so you never record too quiet or clipping, capture room tone, and export everything as a single zip.
 
+You run it on your own computer — nothing is uploaded anywhere, and your recordings stay in a folder you choose.
+
 ## Requirements
 
-- [Node.js](https://nodejs.org/) 18 or newer (includes `npm`)
-- A modern browser (Chrome, Edge, or Firefox)
-- A microphone
+- [Node.js](https://nodejs.org/) **18 or newer** (the installer includes `npm`). Download the "LTS" version and accept the defaults.
+- A modern browser — **Chrome or Edge recommended** (the native folder picker is Windows-only; Firefox works but you'll type the output path by hand).
+- A microphone.
 
-## Setup
+## Install & run
+
+**1. Get the code** — either:
+
+- Clone it with git:
+  ```bash
+  git clone https://github.com/ryan-bower/VoiceLineRecorder.git
+  cd VoiceLineRecorder
+  ```
+- …or, if you don't use git: on the GitHub page click the green **Code ▾** button → **Download ZIP**, unzip it, and open that folder.
+
+**2. Install dependencies** (run once, from inside the project folder):
 
 ```bash
-git clone <repo-url>
-cd VoiceLineRecorder
 npm install
+```
+
+**3. Start the app:**
+
+```bash
 npm start
 ```
 
-Then open **http://localhost:4321** in your browser.
+**4. Open it** — go to **http://localhost:4321** in your browser.
 
-There is no build step and only three well-known dependencies — `npm install` is all that's needed.
+That's it. There's no build step and only three small, well-known dependencies. To stop the app, press `Ctrl+C` in the terminal; to run it again later just `npm start` from the project folder.
+
+> **Windows tip:** open the project folder, then in the address bar type `cmd` and press Enter to get a terminal already pointed at the right folder. Or use PowerShell / Windows Terminal.
 
 ## How to use
 
