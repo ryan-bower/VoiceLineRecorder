@@ -132,6 +132,20 @@ app.post("/api/session", async (req, res) => {
   }
 });
 
+// Does a project with this name+folder already exist (i.e. would resume)?
+app.get("/api/session-exists", async (req, res) => {
+  try {
+    const { baseDir, projectName } = req.query;
+    if (!baseDir || !projectName) return res.json({ exists: false });
+    const dir = projectDir(String(baseDir), String(projectName));
+    const existing = JSON.parse(await fsp.readFile(sessionFile(dir), "utf8"));
+    const takeCount = Object.values(existing.takes || {}).reduce((a, b) => a + b.length, 0);
+    res.json({ exists: true, takeCount, roomTone: (existing.roomTone || []).length });
+  } catch {
+    res.json({ exists: false });
+  }
+});
+
 app.post("/api/takes", upload.single("audio"), async (req, res) => {
   try {
     if (!session) return res.status(409).json({ error: "No active session." });

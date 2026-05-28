@@ -126,6 +126,17 @@ kbd {
 .folder-manual summary { color: var(--muted); font-size: 13px; cursor: pointer; }
 .folder-manual input { margin-top: 8px; }
 
+.callout {
+  margin-top: 8px;
+  padding: 8px 11px;
+  font-size: 13px;
+  color: var(--amber);
+  background: rgba(216, 161, 58, 0.1);
+  border: 1px solid rgba(216, 161, 58, 0.4);
+  border-radius: 8px;
+}
+.callout[hidden] { display: none; }
+
 .preview { margin-top: 10px; font-size: 14px; color: var(--muted); }
 .preview ol { margin: 6px 0; padding-left: 22px; }
 

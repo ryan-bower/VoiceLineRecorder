@@ -23,6 +23,8 @@ const state = {
   isRecording: false,
   rtTimerId: null,
   lastToggle: 0,
+  resuming: false,
+  resumeInfo: null,
 };
 
 // Abandon any in-progress recording (used when switching screens) so a stray
@@ -47,6 +49,37 @@ function setChosenFolder(p) {
   state.chosenFolder = p;
   $("folderChosen").textContent = p ? "✓ Saving to: " + p : "";
   validateSetup();
+  checkResume();
+}
+
+// Detect whether the chosen name + folder already exists (would resume) and
+// reflect it on the button label and a callout under the project name.
+async function checkResume() {
+  const name = $("projectName").value.trim();
+  if (!name || !state.chosenFolder) {
+    state.resuming = false;
+  } else {
+    try {
+      const d = await api(
+        `/api/session-exists?baseDir=${encodeURIComponent(state.chosenFolder)}&projectName=${encodeURIComponent(name)}`
+      );
+      state.resuming = !!d.exists;
+      state.resumeInfo = d;
+    } catch {
+      state.resuming = false;
+    }
+  }
+  const note = $("projectNote");
+  if (state.resuming) {
+    const i = state.resumeInfo || {};
+    note.textContent = `↻ This project already exists — continuing will resume it (${i.takeCount || 0} takes, ${i.roomTone || 0} room tone saved).`;
+    note.hidden = false;
+  } else {
+    note.hidden = true;
+  }
+  $("toMicCheck").textContent = state.resuming
+    ? "Resuming previous session →"
+    : "Continue to mic check →";
 }
 
 $("folderPick").onclick = async () => {
@@ -78,7 +111,7 @@ $("txtFile").onchange = async (e) => {
   validateSetup();
 };
 
-$("projectName").oninput = validateSetup;
+$("projectName").oninput = () => { validateSetup(); checkResume(); };
 
 function validateSetup() {
   const ok = $("projectName").value.trim() && state.chosenFolder && state.linesText;
@@ -439,6 +472,7 @@ $("newSession").onclick = async () => {
   $("toMicCheck").disabled = true;
   $("toMicCheck").classList.remove("glow-green");
   $("folderManual").value = "";
+  checkResume();
   show("setup");
 };
 
